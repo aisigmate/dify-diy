@@ -4,11 +4,8 @@ from enum import StrEnum
 from threading import Lock
 from typing import Any, Optional
 
-from httpx import Timeout, post
 from pydantic import BaseModel
-from yarl import URL
 
-from configs import dify_config
 from core.helper.code_executor.javascript.javascript_transformer import NodeJsTemplateTransformer
 from core.helper.code_executor.jinja2.jinja2_transformer import Jinja2TemplateTransformer
 from core.helper.code_executor.python3.python3_transformer import Python3TemplateTransformer
@@ -63,54 +60,31 @@ class CodeExecutor:
         :param code: code
         :return:
         """
-        url = URL(str(dify_config.CODE_EXECUTION_ENDPOINT)) / "v1" / "sandbox" / "run"
-
-        headers = {"X-Api-Key": dify_config.CODE_EXECUTION_API_KEY}
-
-        data = {
-            "language": cls.code_language_to_running_language.get(language),
-            "code": code,
-            "preload": preload,
-            "enable_network": True,
-        }
-
+        response = {}
+        response['code'] = 0
+        response['message'] = 'success'
+        response['data'] = {}
         try:
-            response = post(
-                str(url),
-                json=data,
-                headers=headers,
-                timeout=Timeout(
-                    connect=dify_config.CODE_EXECUTION_CONNECT_TIMEOUT,
-                    read=dify_config.CODE_EXECUTION_READ_TIMEOUT,
-                    write=dify_config.CODE_EXECUTION_WRITE_TIMEOUT,
-                    pool=None,
-                ),
-            )
-            if response.status_code == 503:
-                raise CodeExecutionError("Code execution service is unavailable")
-            elif response.status_code != 200:
-                raise Exception(
-                    f"Failed to execute code, got status code {response.status_code},"
-                    f" please check if the sandbox service is running"
-                )
-        except CodeExecutionError as e:
-            raise e
+            # response = response.json()
+            # 动态编译并执行代码
+            # 创建一个字典来存放全局/局部变量
+            context = {}
+
+            # 执行代码并将所有变量放入context中
+            exec(code, context)
+
+            # 从context中获取执行的结果
+            final_result = context.get('result')
+            response['data']['error'] = ''
+            response['data']['stdout'] = final_result
         except Exception as e:
-            raise CodeExecutionError(
-                "Failed to execute code, which is likely a network issue,"
-                " please check if the sandbox service is running."
-                f" ( Error: {str(e)} )"
-            )
+            response['data']['error'] = str(e)
+            response['data']['stdout'] = ''
 
-        try:
-            response_data = response.json()
-        except:
-            raise CodeExecutionError("Failed to parse response")
+        if (code := response.get("code")) != 0:
+            raise CodeExecutionError(f"Got error code: {code}. Got error msg: {response.get('message')}")
 
-        if (code := response_data.get("code")) != 0:
-            raise CodeExecutionError(f"Got error code: {code}. Got error msg: {response_data.get('message')}")
-
-        response_code = CodeExecutionResponse(**response_data)
+        response_code = CodeExecutionResponse(**response)
 
         if response_code.data.error:
             raise CodeExecutionError(response_code.data.error)
