@@ -1,7 +1,7 @@
 import json
 import logging
 
-from flask import abort, request
+from flask import abort, g, request
 from flask_restful import Resource, inputs, marshal_with, reqparse  # type: ignore
 from werkzeug.exceptions import Forbidden, InternalServerError, NotFound
 
@@ -297,7 +297,7 @@ class DraftWorkflowNodeRunApi(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("inputs", type=dict, required=True, nullable=False, location="json")
         args = parser.parse_args()
-
+        g.tenant_id = app_model.tenant_id
         workflow_service = WorkflowService()
         workflow_node_execution = workflow_service.run_draft_workflow_node(
             app_model=app_model, node_id=node_id, user_inputs=args.get("inputs"), account=current_user

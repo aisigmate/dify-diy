@@ -1,0 +1,74 @@
+identity:
+  name: create_workspace
+  author: wubing
+  label:
+    en_US: create_workspace
+    zh_Hans: 创建、删除工作空间
+    pt_BR: create_workspace
+description:
+  human:
+    en_US: A tool for create workspace
+    zh_Hans: 一个用于创建、删除工作空间的工具。
+    pt_BR: A tool for create workspace
+  llm: A tool for create workspace
+parameters:
+  - name: workspace_name
+    type: string
+    required: true
+    label:
+      en_US: workspace_name
+      zh_Hans: 需要创建、删除的工作空间的名称，多个工作空间使用|隔开
+      pt_BR: workspace_name
+    human_description:
+      en_US: workspace_name
+      zh_Hans: 需要创建、删除的工作空间的名称，多个工作空间使用|隔开
+      pt_BR: workspace_name
+    form: form
+  - name: operate_type
+    type: select
+    required: true
+    label:
+      en_US: create or delete
+      zh_Hans: 操作类型，创建或者删除
+      pt_BR: create or delete
+    human_description:
+      en_US: create or delete
+      zh_Hans: 操作类型，创建或者删除
+      pt_BR: create or delete
+    form: form
+    default: create
+    options:
+      - value: create
+        label:
+          en_US: create
+          zh_Hans: 创建
+          pt_BR: create
+      - value: delete
+        label:
+          en_US: delete
+          zh_Hans: 删除
+          pt_BR: delete
+  - name: force_delete
+    type: select
+    required: true
+    label:
+      en_US: whether ignore apps
+      zh_Hans: 删除时，是否忽略空间内app，进行强制删除
+      pt_BR: whether ignore apps
+    human_description:
+      en_US: whether ignore apps
+      zh_Hans: 删除时，是否忽略空间内app，进行强制删除
+      pt_BR: whether ignore apps
+    form: form
+    default: notForce
+    options:
+      - value: force
+        label:
+          en_US: force delete
+          zh_Hans: 强制删除
+          pt_BR: force delete
+      - value: notForce
+        label:
+          en_US: not force delete
+          zh_Hans: 非强制删除
+          pt_BR: not force delete
